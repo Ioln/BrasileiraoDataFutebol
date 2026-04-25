@@ -40,16 +40,12 @@ def load_data():
             "Team State":  "UF Mandante",
             "Opp State":   "UF Adversário",
             "Game Venue":  "Mando",
-            "Team Result": "Resultado",
-            "Comp":        "Competição",
-            "Game Stage":  "Fase",
+            "Team Result": "Resultado"
         })
         df["Mando"]     = df["Mando"].map({"H": "Casa", "A": "Fora"}).fillna(df["Mando"])
         df["Resultado"] = df["Resultado"].map({"W": "V", "D": "E", "L": "D"}).fillna(df["Resultado"])
 
     df = df[df["Temporada"] > 0]
-    df["Time"]       = df["Time"].apply(corrigir_nome)
-    df["Adversário"] = df["Adversário"].apply(corrigir_nome)
     return df
 
 df         = load_data()
@@ -305,7 +301,7 @@ elif page == "🔍 Busca de Jogos":
     br()
     show = res[[
         "Temporada","Data","Time","Gols Marcados","Gols Sofridos",
-        "Adversário","Mando","Resultado","UF Mandante","UF Adversário","Competição","Fase"
+        "Adversário","Mando","Resultado","UF Mandante","UF Adversário"
     ]].copy()
     show["Resultado"] = show["Resultado"].map({"V":"✅ Vitória","E":"🟡 Empate","D":"❌ Derrota"})
     show["Data"]      = show["Data"].dt.strftime("%d/%m/%Y")
