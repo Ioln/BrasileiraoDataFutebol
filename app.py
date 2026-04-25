@@ -317,7 +317,7 @@ elif page == "🔍 Busca de Jogos":
     ]].copy()
     show["Team Result"] = show["Team Result"].map({"W":"✅ Vitória","D":"🟡 Empate","L":"❌ Derrota"})
     show["Game Venue"]  = show["Game Venue"].map({"H":"🏠 Casa","A":"✈️ Fora"})
-    show["Game Date"]   = show["Game Date"].dt.strftime("%d/%m/%Y")
+    show["Game Date"]   = show["Game Date"].dt.date
     show.columns = [
         "Temp.","Data","Time","GF","GC",
         "Adversário","Mando","Resultado","UF Mandante","UF Visitante"
