@@ -607,11 +607,12 @@ elif page == "📈 Gráficos":
 
         x_col    = METRIC_MAP[eixo_x]
         y_col    = METRIC_MAP[eixo_y]
-        size_col = METRIC_MAP[tam_bolha] if tam_bolha != "(nenhum)" else None
+        size_col  = METRIC_MAP[tam_bolha] if tam_bolha != "(nenhum)" else None
+        size_data = agg[size_col].abs().clip(lower=1) if size_col else None
 
         fig_sc = px.scatter(
             agg, x=x_col, y=y_col, text="Time",
-            size=size_col, color=y_col,
+            size=size_data, color=y_col,
             color_continuous_scale=[[0,"#444444"],[0.5,"#C0C0C0"],[1,"#AAFF00"]],
             hover_name="Time",
             labels={x_col: eixo_x, y_col: eixo_y}
