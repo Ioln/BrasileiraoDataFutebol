@@ -1,0 +1,223 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap');
+
+/* ── PALETA: Preto / Verde-Limão / Prateado / Branco ── */
+
+html, body, [class*="css"], .stApp {
+    font-family: 'Inter', sans-serif;
+    background-color: #000000 !important;
+    color: #FFFFFF !important;
+}
+
+/* Sidebar */
+[data-testid="stSidebar"] {
+    background: #0a0a0a !important;
+    border-right: 2px solid #AAFF00 !important;
+}
+[data-testid="stSidebar"] * { color: #CCCCCC !important; }
+[data-testid="stSidebar"] .sidebar-title { color: #AAFF00 !important; }
+[data-testid="stSidebar"] .sidebar-sub   { color: #C0C0C0 !important; }
+[data-testid="stSidebar"] a { color: #AAFF00 !important; }
+
+/* Radio buttons na sidebar */
+[data-testid="stSidebar"] [data-baseweb="radio"] label { color: #CCCCCC !important; }
+
+/* Barra de contato */
+.contact-bar {
+    background: linear-gradient(90deg, #0d0d0d 0%, #1a1a1a 100%);
+    border: 1px solid #AAFF00;
+    padding: 8px 20px;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.contact-pix       { color: #C0C0C0; font-size: 13px; }
+.contact-pix span  { color: #AAFF00; font-weight: 700; }
+.contact-links     { display: flex; gap: 16px; flex-wrap: wrap; }
+.contact-links a   { color: #AAFF00 !important; text-decoration: none; font-weight: 600; font-size: 13px; }
+.contact-links a:hover { color: #FFFFFF !important; }
+
+/* Sidebar logo/texto */
+.sidebar-logo  { padding: 16px 0; text-align: center; }
+.sidebar-title { font-family: 'Bebas Neue', sans-serif; font-size: 26px; letter-spacing: 4px; text-align: center; }
+.sidebar-sub   { font-family: 'Bebas Neue', sans-serif; font-size: 12px; letter-spacing: 3px; text-align: center; }
+.sidebar-info  { font-size: 10px; color: #555 !important; text-align: center; margin-top: 4px; }
+.sidebar-pix   { font-size: 11px; color: #555 !important; text-align: center; padding: 10px 0; }
+.sidebar-pix span { color: #AAFF00 !important; }
+.sidebar-pix a { color: #AAFF00 !important; text-decoration: none; }
+
+/* Cards de stats */
+.stat-card {
+    background: #0d0d0d;
+    border: 1px solid #2a2a2a;
+    border-radius: 10px;
+    padding: 14px;
+    text-align: center;
+    transition: all 0.25s ease;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #AAFF00, #C0C0C0);
+}
+.stat-card:hover {
+    border-color: #AAFF00;
+    box-shadow: 0 0 18px rgba(170,255,0,0.15);
+    transform: translateY(-2px);
+}
+.stat-label { font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 4px; }
+.stat-value { font-family: 'Bebas Neue', sans-serif; font-size: 34px; color: #AAFF00; line-height: 1; }
+.stat-sub   { font-size: 11px; color: #C0C0C0; margin-top: 3px; }
+
+/* Título de seção */
+.section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 24px;
+    color: #AAFF00;
+    letter-spacing: 3px;
+    margin-bottom: 8px;
+    margin-top: 10px;
+    border-bottom: 1px solid #2a2a2a;
+    padding-bottom: 6px;
+}
+
+/* Hero */
+.hero-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 56px;
+    color: #FFFFFF;
+    letter-spacing: 5px;
+    line-height: 1.05;
+}
+.hero-green { color: #AAFF00; }
+.hero-desc  { font-size: 15px; color: #C0C0C0; margin-top: 14px; line-height: 1.7; max-width: 520px; }
+
+/* Feature cards */
+.feat-card {
+    background: #0d0d0d;
+    border: 1px solid #2a2a2a;
+    border-radius: 10px;
+    padding: 18px;
+    margin-bottom: 8px;
+    transition: all 0.25s;
+    height: 100%;
+}
+.feat-card:hover { border-color: #AAFF00; box-shadow: 0 0 14px rgba(170,255,0,0.1); }
+.feat-icon  { font-size: 30px; margin-bottom: 8px; }
+.feat-title { font-family: 'Bebas Neue', sans-serif; font-size: 17px; color: #AAFF00; letter-spacing: 1px; }
+.feat-desc  { font-size: 12px; color: #888; margin-top: 6px; line-height: 1.5; }
+
+/* PIX box */
+.pix-box {
+    background: #0d0d0d;
+    border: 1px solid #AAFF00;
+    border-radius: 10px;
+    padding: 22px;
+    max-width: 560px;
+    font-size: 14px;
+    color: #C0C0C0;
+    line-height: 1.9;
+}
+.pix-box a      { color: #AAFF00; }
+.pix-box strong { color: #AAFF00; }
+
+/* Team header */
+.team-header {
+    background: #0d0d0d;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin: 10px 0;
+    border-left: 4px solid #AAFF00;
+}
+.team-name    { font-family: 'Bebas Neue', sans-serif; font-size: 30px; color: #FFFFFF; letter-spacing: 3px; }
+.team-seasons { color: #888; margin-left: 14px; font-size: 13px; }
+
+/* Sequências */
+.seq-card {
+    background: #0d0d0d;
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin-bottom: 10px;
+    border-left: 3px solid #C0C0C0;
+    transition: all 0.2s;
+}
+.seq-card.gold   { border-left-color: #AAFF00; }
+.seq-card.active {
+    border-left-color: #AAFF00;
+    background: rgba(170,255,0,0.04);
+    box-shadow: 0 0 16px rgba(170,255,0,0.12);
+}
+.seq-rank-box { text-align: center; padding: 16px 8px; }
+.seq-count      { font-family: 'Bebas Neue', sans-serif; font-size: 44px; color: #C0C0C0; }
+.seq-count.gold { color: #AAFF00; }
+.seq-tipo       { font-size: 10px; color: #666; text-transform: uppercase; letter-spacing: 1px; }
+.seq-header {
+    background: #0d0d0d;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    padding: 12px 20px;
+    margin: 10px 0;
+}
+.seq-team  { font-family: 'Bebas Neue', sans-serif; font-size: 22px; color: #AAFF00; }
+.seq-meta  { color: #666; font-size: 13px; margin-left: 10px; }
+.seq-top   { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+.seq-label { font-family: 'Bebas Neue', sans-serif; font-size: 18px; color: #FFFFFF; letter-spacing: 1px; }
+.seq-period { font-size: 12px; color: #666; margin-top: 2px; }
+.seq-games  { font-size: 12px; color: #999; line-height: 1.7; margin-top: 6px; }
+
+.badge-active {
+    background: #AAFF00;
+    color: #000000;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+}
+
+/* Tabs */
+[data-baseweb="tab-list"] {
+    background: #0d0d0d !important;
+    border-radius: 8px;
+    padding: 4px;
+    border: 1px solid #2a2a2a;
+}
+[data-baseweb="tab"] { color: #888 !important; font-weight: 600; }
+[aria-selected="true"] {
+    background: #AAFF00 !important;
+    color: #000000 !important;
+    border-radius: 6px !important;
+}
+
+/* Inputs / selects */
+[data-baseweb="select"] > div {
+    background-color: #0d0d0d !important;
+    border-color: #2a2a2a !important;
+    color: #FFFFFF !important;
+}
+[data-testid="stDataFrame"] {
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+}
+
+/* Expander */
+[data-testid="stExpander"] {
+    background: #0d0d0d !important;
+    border: 1px solid #2a2a2a !important;
+    border-radius: 8px !important;
+}
+
+/* Divider */
+hr { border-color: #1a1a1a !important; }
+
+/* Labels dos filtros (Time, Adversário, Mando, etc.) */
+label { color: #FFFFFF !important; }
