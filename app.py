@@ -29,6 +29,13 @@ all_teams  = sorted(df["Time"].dropna().unique().tolist())
 all_states = sorted(df["UF Mandante"].dropna().unique().tolist())
 seasons    = sorted(df["Temporada"].unique().tolist())
 
+# CONTATO
+PIX_KEY       = "contato.datafutebol@gmail.com"
+EMAIL         = "contato.datafutebol@gmail.com"
+URL_TWITTER   = "https://x.com/DataFutebol"
+URL_INSTAGRAM = "https://www.instagram.com/datafutebol_/"
+URL_LINKEDIN  = "https://www.linkedin.com/in/ioannis-canteiro-958280226/"
+
 # CONSTANTES / HELPERS
 
 COR_PADRAO = ["#AAFF00","#F7F7F7","#FFFFFF","#39FF14","#00FF7F","#7FFF00"]
@@ -116,12 +123,12 @@ def br(n=1):
 def render_contact_bar():
     st.markdown(
         '<div class="contact-bar">'
-        '<div class="contact-pix">PIX para doações: <span>contato.datafutebol@gmail.com</span></div>'
+        f'<div class="contact-pix">PIX para doações: <span>{PIX_KEY}</span></div>'
         '<div class="contact-links">'
-        '<a href="https://x.com/DataFutebol"   target="_blank">🐦 Twitter</a>'
-        '<a href="https://www.instagram.com/datafutebol_/" target="_blank">📸 Instagram</a>'
-        '<a href="https://www.linkedin.com/in/ioannis-canteiro-958280226/"    target="_blank">💻 Linkedln</a>'
-        '<a href="mailto:contato.datafutebol@gmail.com">✉️ E-mail</a>'
+        f'<a href="{URL_TWITTER}"   target="_blank">🐦 Twitter</a>'
+        f'<a href="{URL_INSTAGRAM}" target="_blank">📸 Instagram</a>'
+        f'<a href="{URL_LINKEDIN}"  target="_blank">💻 LinkedIn</a>'
+        f'<a href="mailto:{EMAIL}">✉️ E-mail</a>'
         '</div></div>',
         unsafe_allow_html=True
     )
@@ -148,10 +155,10 @@ with st.sidebar:
     st.markdown("---")
     st.markdown(
         '<div class="sidebar-pix">'
-        'PIX: <span>contato.datafutebol@gmail.com</span><br><br>'
-        '<a href="https://x.com/DataFutebol">Twitter</a> · '
-        '<a href="https://www.instagram.com/datafutebol_/">Instagram</a> · '
-        '<a href="https://www.linkedin.com/in/ioannis-canteiro-958280226/">Linkedln</a>'
+        f'PIX: <span>{PIX_KEY}</span><br><br>'
+        f'<a href="{URL_TWITTER}">Twitter</a> · '
+        f'<a href="{URL_INSTAGRAM}">Instagram</a> · '
+        f'<a href="{URL_LINKEDIN}">LinkedIn</a>'
         '</div>',
         unsafe_allow_html=True
     )
@@ -217,12 +224,12 @@ if page == "🏠 Início":
         '<div class="pix-box">'
         'Este projeto é mantido de forma independente por um apaixonado por futebol e dados.<br>'
         'Se achou útil, considere uma doação via PIX!<br><br>'
-        '<strong>Chave PIX: contato.datafutebol@gmail.com</strong><br><br>'
-        '📧 <a href="mailto:contato.datafutebol@gmail.com">contato.datafutebol@gmail.com</a>'
+        f'<strong>Chave PIX: {PIX_KEY}</strong><br><br>'
+        f'📧 <a href="mailto:{EMAIL}">{EMAIL}</a>'
         ' &nbsp;·&nbsp; '
-        '🐦 <a href="https://x.com/DataFutebol">@DataFutebol</a>'
+        f'🐦 <a href="{URL_TWITTER}">@DataFutebol</a>'
         ' &nbsp;·&nbsp; '
-        '📸 <a href="https://www.instagram.com/datafutebol_/">@datafutebol_.com</a>'
+        f'📸 <a href="{URL_INSTAGRAM}">@datafutebol_</a>'
         '</div>',
         unsafe_allow_html=True
     )
