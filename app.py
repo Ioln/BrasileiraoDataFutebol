@@ -69,13 +69,14 @@ def agg_season(df_in):
     ).reset_index()
     g["PTS"]     = g["W"] * 3 + g["D"]
     g["saldo"]   = g["GF"] - g["GA"]
-    g["aprov"]   = ((g["W"]*3 + g["D"]) / (g["J"]*3) * 100).round(1)
-    g["pct_v"]   = (g["W"] / g["J"] * 100).round(1)
-    g["pct_e"]   = (g["D"] / g["J"] * 100).round(1)
-    g["pct_d"]   = (g["L"] / g["J"] * 100).round(1)
-    g["gf_j"]    = (g["GF"] / g["J"]).round(2)
-    g["ga_j"]    = (g["GA"] / g["J"]).round(2)
-    g["saldo_j"] = (g["saldo"] / g["J"]).round(2)
+    J_safe = g["J"].replace(0, float("nan"))
+    g["aprov"]   = ((g["W"]*3 + g["D"]) / (J_safe*3) * 100).round(1).fillna(0)
+    g["pct_v"]   = (g["W"] / J_safe * 100).round(1).fillna(0)
+    g["pct_e"]   = (g["D"] / J_safe * 100).round(1).fillna(0)
+    g["pct_d"]   = (g["L"] / J_safe * 100).round(1).fillna(0)
+    g["gf_j"]    = (g["GF"] / J_safe).round(2).fillna(0)
+    g["ga_j"]    = (g["GA"] / J_safe).round(2).fillna(0)
+    g["saldo_j"] = (g["saldo"] / J_safe).round(2).fillna(0)
     return g
 
 def agg_total(df_in):
@@ -393,9 +394,10 @@ elif page == "📊 Histórico do Time":
         GA=("Gols Sofridos","sum"),
     ).reset_index()
     adv["Saldo"]    = adv["GF"] - adv["GA"]
-    adv["Aprov%"]   = ((adv["W"]*3 + adv["D"]) / (adv["J"]*3) * 100).round(1)
-    adv["Média GF"] = (adv["GF"] / adv["J"]).round(2)
-    adv["Média GC"] = (adv["GA"] / adv["J"]).round(2)
+    J_safe = adv["J"].replace(0, float("nan"))
+    adv["Aprov%"]   = ((adv["W"]*3 + adv["D"]) / (J_safe*3) * 100).round(1).fillna(0)
+    adv["Média GF"] = (adv["GF"] / J_safe).round(2).fillna(0)
+    adv["Média GC"] = (adv["GA"] / J_safe).round(2).fillna(0)
     adv = adv.sort_values("J", ascending=False).head(20).reset_index(drop=True)
     adv.index += 1
     adv = adv.rename(columns={"J":"Jogos","W":"V","D":"E","L":"D","GF":"Gols Pró","GA":"Gols Contra"})
@@ -597,13 +599,14 @@ elif page == "📈 Gráficos":
         ).reset_index()
         agg["PTS"]     = agg["W"]*3 + agg["D"]
         agg["saldo"]   = agg["GF"] - agg["GA"]
-        agg["aprov"]   = ((agg["W"]*3 + agg["D"]) / (agg["J"]*3) * 100).round(1)
-        agg["pct_v"]   = (agg["W"] / agg["J"] * 100).round(1)
-        agg["pct_e"]   = (agg["D"] / agg["J"] * 100).round(1)
-        agg["pct_d"]   = (agg["L"] / agg["J"] * 100).round(1)
-        agg["gf_j"]    = (agg["GF"] / agg["J"]).round(2)
-        agg["ga_j"]    = (agg["GA"] / agg["J"]).round(2)
-        agg["saldo_j"] = (agg["saldo"] / agg["J"]).round(2)
+        J_safe = agg["J"].replace(0, float("nan"))
+        agg["aprov"]   = ((agg["W"]*3 + agg["D"]) / (J_safe*3) * 100).round(1).fillna(0)
+        agg["pct_v"]   = (agg["W"] / J_safe * 100).round(1).fillna(0)
+        agg["pct_e"]   = (agg["D"] / J_safe * 100).round(1).fillna(0)
+        agg["pct_d"]   = (agg["L"] / J_safe * 100).round(1).fillna(0)
+        agg["gf_j"]    = (agg["GF"] / J_safe).round(2).fillna(0)
+        agg["ga_j"]    = (agg["GA"] / J_safe).round(2).fillna(0)
+        agg["saldo_j"] = (agg["saldo"] / J_safe).round(2).fillna(0)
 
         x_col    = METRIC_MAP[eixo_x]
         y_col    = METRIC_MAP[eixo_y]
@@ -652,12 +655,13 @@ elif page == "📈 Gráficos":
             ).reset_index()
             ac["PTS"]    = ac["W"]*3 + ac["D"]
             ac["Saldo"]  = ac["GF"] - ac["GA"]
-            ac["Aprov%"] = ((ac["W"]*3 + ac["D"]) / (ac["J"]*3) * 100).round(1)
-            ac["% V"]    = (ac["W"] / ac["J"] * 100).round(1)
-            ac["% E"]    = (ac["D"] / ac["J"] * 100).round(1)
-            ac["% D"]    = (ac["L"] / ac["J"] * 100).round(1)
-            ac["Méd GF"] = (ac["GF"] / ac["J"]).round(2)
-            ac["Méd GC"] = (ac["GA"] / ac["J"]).round(2)
+            J_safe = ac["J"].replace(0, float("nan"))
+            ac["Aprov%"] = ((ac["W"]*3 + ac["D"]) / (J_safe*3) * 100).round(1).fillna(0)
+            ac["% V"]    = (ac["W"] / J_safe * 100).round(1).fillna(0)
+            ac["% E"]    = (ac["D"] / J_safe * 100).round(1).fillna(0)
+            ac["% D"]    = (ac["L"] / J_safe * 100).round(1).fillna(0)
+            ac["Méd GF"] = (ac["GF"] / J_safe).round(2).fillna(0)
+            ac["Méd GC"] = (ac["GA"] / J_safe).round(2).fillna(0)
 
             metrica_comp = st.selectbox(
                 "Métrica para o gráfico",
