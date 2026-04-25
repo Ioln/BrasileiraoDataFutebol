@@ -180,7 +180,7 @@ with st.sidebar:
     st.markdown("---")
     st.markdown(
         '<div class="sidebar-pix">'
-        'PIX: <span>contato.datafutebol@gmail.comr</span><br><br>'
+        'PIX: <span>contato.datafutebol@gmail.com</span><br><br>'
         '<a href="https://x.com/DataFutebol">Twitter</a> · '
         '<a href="https://www.instagram.com/datafutebol_/">Instagram</a> · '
         '<a href="https://www.linkedin.com/in/ioannis-canteiro-958280226/">Linkedln</a>'
