@@ -14,52 +14,23 @@ st.set_page_config(
 with open("style.css") as f:
     st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
-# ═══════════════════════════════════════════════════════════════════
-# CORRETOR DE NOMES
-# ═══════════════════════════════════════════════════════════════════
-NOME_CORRETO = {
-    "América RJ":   "America-RJ",
-    "América SP":    "America-SP",
-    "América CE":       "América-CE",
-    "América RN":        "América-RN",
-    "América SE":             "América-SE",
-    "AA Colatina":             "Colatina",
-    "Athletico Paranaense":             "Athletico",
-    "Cascavel EC":             "Cascavel",
-    "Botafogo PB":            "Botafogo-PB",
-    "Botafogo SP":            "Botafogo-SP",
-    "CR Guará":           "Guará",
-    "GE Brasil":           "Brasil de Pelotas",
-    "Red Bull Bragantino":         "RB Bragantino",
-    "Operário Ferroviário":   "Operário-PR",
-    "Santa Cruz-SE":          "Santa Cruz-SE",
-    "Sport Belém":            "Sport-PA",
-    "Vila Nova":              "Vila Nova-GO",
-}
 
-def corrigir_nome(nome):
-    return NOME_CORRETO.get(nome, nome)
-
-# ═══════════════════════════════════════════════════════════════════
-# DADOS
-# ═══════════════════════════════════════════════════════════════════
+# DADOS 
 @st.cache_data
 def load_data():
-    df = pd.read_excel("BRAT.xlsx")
-    df["Game Date"]   = pd.to_datetime(df["Game Date"])
-    df["Game Season"] = df["Game Season"].astype(int)
-    df["Team Name"]   = df["Team Name"].apply(corrigir_nome)
-    df["Opp Name"]    = df["Opp Name"].apply(corrigir_nome)
+    df = pd.read_excel("BRAT_FINAL.xlsx")
+    df["Data"]       = pd.to_datetime(df["Data"])
+    df["Temporada"]  = pd.to_numeric(df["Temporada"], errors="coerce").fillna(0).astype(int)
+    df = df[df["Temporada"] > 0]
     return df
 
-df        = load_data()
-all_teams  = sorted(df["Team Name"].dropna().unique().tolist())
-all_states = sorted(df["Team State"].dropna().unique().tolist())
-seasons    = sorted(df["Game Season"].unique().tolist())
+df         = load_data()
+all_teams  = sorted(df["Time"].dropna().unique().tolist())
+all_states = sorted(df["UF Mandante"].dropna().unique().tolist())
+seasons    = sorted(df["Temporada"].unique().tolist())
 
-# ═══════════════════════════════════════════════════════════════════
 # CONSTANTES / HELPERS
-# ═══════════════════════════════════════════════════════════════════
+
 COR_PADRAO = ["#AAFF00","#F7F7F7","#FFFFFF","#39FF14","#00FF7F","#7FFF00"]
 
 PLOTLY_LAYOUT = dict(
@@ -88,13 +59,13 @@ def calc_aprov(w, d, total):
     return round((w * 3 + d) / (total * 3) * 100, 1) if total > 0 else 0.0
 
 def agg_season(df_in):
-    g = df_in.groupby("Game Season").agg(
-        J  =("Team Result", "count"),
-        W  =("Team Result", lambda x: (x == "W").sum()),
-        D  =("Team Result", lambda x: (x == "D").sum()),
-        L  =("Team Result", lambda x: (x == "L").sum()),
-        GF =("Team Score",  "sum"),
-        GA =("Opp Score",   "sum"),
+    g = df_in.groupby("Temporada").agg(
+        J  =("Resultado", "count"),
+        W  =("Resultado", lambda x: (x == "V").sum()),
+        D  =("Resultado", lambda x: (x == "E").sum()),
+        L  =("Resultado", lambda x: (x == "D").sum()),
+        GF =("Gols Marcados", "sum"),
+        GA =("Gols Sofridos", "sum"),
     ).reset_index()
     g["PTS"]     = g["W"] * 3 + g["D"]
     g["saldo"]   = g["GF"] - g["GA"]
@@ -108,12 +79,12 @@ def agg_season(df_in):
     return g
 
 def agg_total(df_in):
-    J  = len(df_in)
-    W  = (df_in["Team Result"] == "W").sum()
-    D  = (df_in["Team Result"] == "D").sum()
-    L  = (df_in["Team Result"] == "L").sum()
-    GF = df_in["Team Score"].sum()
-    GA = df_in["Opp Score"].sum()
+    J   = len(df_in)
+    W   = (df_in["Resultado"] == "V").sum()
+    D   = (df_in["Resultado"] == "E").sum()
+    L   = (df_in["Resultado"] == "D").sum()
+    GF  = df_in["Gols Marcados"].sum()
+    GA  = df_in["Gols Sofridos"].sum()
     PTS = W * 3 + D
     return dict(
         J=J, W=W, D=D, L=L, GF=GF, GA=GA, PTS=PTS,
@@ -122,8 +93,8 @@ def agg_total(df_in):
         pct_v=round(W/J*100,1) if J else 0,
         pct_e=round(D/J*100,1) if J else 0,
         pct_d=round(L/J*100,1) if J else 0,
-        gf_j=round(GF/J,2) if J else 0,
-        ga_j=round(GA/J,2) if J else 0,
+        gf_j=round(GF/J,2)      if J else 0,
+        ga_j=round(GA/J,2)      if J else 0,
         saldo_j=round((GF-GA)/J,2) if J else 0,
     )
 
@@ -155,9 +126,6 @@ def render_contact_bar():
         unsafe_allow_html=True
     )
 
-# ═══════════════════════════════════════════════════════════════════
-# SIDEBAR
-# ═══════════════════════════════════════════════════════════════════
 with st.sidebar:
     try:
         st.image("Brasileirão.png", use_container_width=True)
@@ -188,9 +156,7 @@ with st.sidebar:
         unsafe_allow_html=True
     )
 
-# ═══════════════════════════════════════════════════════════════════
 # INÍCIO
-# ═══════════════════════════════════════════════════════════════════
 if page == "🏠 Início":
     render_contact_bar()
 
@@ -200,7 +166,6 @@ if page == "🏠 Início":
             st.image("Brasileirão.png", use_container_width=True)
         except Exception:
             st.markdown('<div style="text-align:center;font-size:90px;padding:40px 0">🏆</div>', unsafe_allow_html=True)
-
     with col_texto:
         st.markdown(
             '<div class="hero-title">BRASILEIRAO<br><span class="hero-green">HISTORICO</span></div>'
@@ -217,10 +182,10 @@ if page == "🏠 Início":
         [c1, c2, c3, c4, c5],
         [
             ("JOGOS",      f"{len(df)//2:,}".replace(",","."), "desde 1937"),
-            ("TIMES",      str(df["Team Name"].nunique()),      "participantes"),
-            ("TEMPORADAS", str(df["Game Season"].nunique()),    "edições"),
-            ("GOLS",       f"{int(df['Team Score'].sum()):,}".replace(",","."), "marcados"),
-            ("ESTADOS",    str(df["Team State"].nunique()),     "representados"),
+            ("TIMES",      str(df["Time"].nunique()),           "participantes"),
+            ("TEMPORADAS", str(df["Temporada"].nunique()),      "edições"),
+            ("GOLS",       f"{int(df['Gols Marcados'].sum()):,}".replace(",","."), "marcados"),
+            ("ESTADOS",    str(df["UF Mandante"].nunique()),    "representados"),
         ]
     ):
         col.markdown(stat_card(lbl, val, sub), unsafe_allow_html=True)
@@ -231,10 +196,10 @@ if page == "🏠 Início":
     for col, (icon, title, desc) in zip(
         [f1, f2, f3, f4],
         [
-            ("🔍", "Busca de Jogos",    "Filtre por time, adversário, mando, estado e período. Veja a ficha de cada partida."),
-            ("📊", "Histórico do Time", "Painel completo de estatísticas de um time na história do Brasileirão."),
-            ("🔥", "Sequências",        "Maiores sequências de V/E/D na história. Destaque para sequências ativas."),
-            ("📈", "Gráficos",          "Evolução por temporada, comparações e scatter plots com escolha de cor."),
+            ("🔍", "Busca de Jogos",    "Filtre por time, adversário, mando, estado e período."),
+            ("📊", "Histórico do Time", "Painel completo de estatísticas de um time no Brasileirão."),
+            ("🔥", "Sequências",        "Maiores sequências de V/E/D. Destaque para sequências ativas."),
+            ("📈", "Gráficos",          "Evolução por temporada, comparações e scatter plots."),
         ]
     ):
         col.markdown(
@@ -263,9 +228,7 @@ if page == "🏠 Início":
     )
 
 
-# ═══════════════════════════════════════════════════════════════════
 # BUSCA DE JOGOS
-# ═══════════════════════════════════════════════════════════════════
 elif page == "🔍 Busca de Jogos":
     render_contact_bar()
     section_title("🔍 BUSCA DE JOGOS")
@@ -274,25 +237,25 @@ elif page == "🔍 Busca de Jogos":
         c1, c2, c3 = st.columns(3)
         time_busca  = c1.selectbox("Time",       ["(Todos)"] + all_teams)
         adv_busca   = c2.selectbox("Adversário", ["(Todos)"] + all_teams)
-        venue_busca = c3.selectbox("Mando",      ["Todos", "Mandante (H)", "Visitante (A)"])
+        venue_busca = c3.selectbox("Mando",      ["Todos", "Mandante (Casa)", "Visitante (Fora)"])
 
         c4, c5, c6 = st.columns(3)
         estado_oponente = c4.multiselect("Estado do adversário", all_states)
         temp_ini        = c5.selectbox("Temporada início", seasons, index=0)
         temp_fim        = c6.selectbox("Temporada fim",    seasons, index=len(seasons)-1)
-        resultado_busca = st.multiselect("Resultado", ["W – Vitória", "D – Empate", "L – Derrota"])
+        resultado_busca = st.multiselect("Resultado", ["V – Vitória", "E – Empate", "D – Derrota"])
 
-    mask = (df["Game Season"] >= temp_ini) & (df["Game Season"] <= temp_fim)
-    if time_busca  != "(Todos)": mask &= df["Team Name"] == time_busca
-    if adv_busca   != "(Todos)": mask &= df["Opp Name"]  == adv_busca
-    if venue_busca == "Mandante (H)":  mask &= df["Game Venue"] == "H"
-    elif venue_busca == "Visitante (A)": mask &= df["Game Venue"] == "A"
-    if estado_oponente: mask &= df["Opp State"].isin(estado_oponente)
+    mask = (df["Temporada"] >= temp_ini) & (df["Temporada"] <= temp_fim)
+    if time_busca != "(Todos)":  mask &= df["Time"]       == time_busca
+    if adv_busca  != "(Todos)":  mask &= df["Adversário"] == adv_busca
+    if venue_busca == "Mandante (Casa)":    mask &= df["Mando"] == "Casa"
+    elif venue_busca == "Visitante (Fora)": mask &= df["Mando"] == "Fora"
+    if estado_oponente: mask &= df["UF Adversário"].isin(estado_oponente)
     if resultado_busca:
-        rmap = {"W – Vitória": "W", "D – Empate": "D", "L – Derrota": "L"}
-        mask &= df["Team Result"].isin([rmap[r] for r in resultado_busca])
+        rmap = {"V – Vitória": "V", "E – Empate": "E", "D – Derrota": "D"}
+        mask &= df["Resultado"].isin([rmap[r] for r in resultado_busca])
 
-    res = df[mask].copy()
+    res   = df[mask].copy()
     total = len(res)
 
     if total > 0:
@@ -310,24 +273,18 @@ elif page == "🔍 Busca de Jogos":
             col.markdown(stat_card(lbl, val, sub), unsafe_allow_html=True)
 
     br()
-    # Tabela em português, apenas colunas importantes
     show = res[[
-        "Game Season","Game Date","Team Name","Team Score","Opp Score",
-        "Opp Name","Game Venue","Team Result","Team State","Opp State"
+        "Temporada","Data","Time","Gols Marcados","Gols Sofridos",
+        "Adversário","Mando","Resultado","UF Mandante","UF Adversário","Competição","Fase"
     ]].copy()
-    show["Team Result"] = show["Team Result"].map({"W":"✅ Vitória","D":"🟡 Empate","L":"❌ Derrota"})
-    show["Game Venue"]  = show["Game Venue"].map({"H":"🏠 Casa","A":"✈️ Fora"})
-    show["Game Date"]   = show["Game Date"].dt.date
-    show.columns = [
-        "Temp.","Data","Time","GF","GC",
-        "Adversário","Mando","Resultado","UF Mandante","UF Visitante"
-    ]
+    show["Resultado"] = show["Resultado"].map({"V":"✅ Vitória","E":"🟡 Empate","D":"❌ Derrota"})
+    show["Data"]      = show["Data"].dt.strftime("%d/%m/%Y")
+    show = show.rename(columns={"Gols Marcados":"GF","Gols Sofridos":"GC"})
     st.markdown(f"**{total:,}** jogo(s) encontrado(s)".replace(",","."))
     st.dataframe(show.reset_index(drop=True), use_container_width=True, height=460)
 
-# ═══════════════════════════════════════════════════════════════════
+
 # HISTÓRICO DO TIME
-# ═══════════════════════════════════════════════════════════════════
 elif page == "📊 Histórico do Time":
     render_contact_bar()
     section_title("📊 HISTÓRICO DO TIME")
@@ -343,20 +300,20 @@ elif page == "📊 Histórico do Time":
             hist_ini = ca.selectbox("De",  seasons, index=0)
             hist_fim = cb.selectbox("Até", seasons, index=len(seasons)-1)
 
-    t = df[df["Team Name"] == time_hist].copy()
+    t = df[df["Time"] == time_hist].copy()
     if periodo == "Por temporada":
-        t = t[t["Game Season"] == temp_unica]
+        t = t[t["Temporada"] == temp_unica]
     elif periodo == "Intervalo":
-        t = t[(t["Game Season"] >= hist_ini) & (t["Game Season"] <= hist_fim)]
+        t = t[(t["Temporada"] >= hist_ini) & (t["Temporada"] <= hist_fim)]
 
     if len(t) == 0:
         st.warning("Sem dados para o filtro selecionado.")
         st.stop()
 
-    s = agg_total(t)
-    n_seas  = t["Game Season"].nunique()
-    home_df = t[t["Game Venue"] == "H"]
-    away_df = t[t["Game Venue"] == "A"]
+    s       = agg_total(t)
+    n_seas  = t["Temporada"].nunique()
+    home_df = t[t["Mando"] == "Casa"]
+    away_df = t[t["Mando"] == "Fora"]
 
     st.markdown(
         '<div class="team-header">'
@@ -367,42 +324,28 @@ elif page == "📊 Histórico do Time":
     )
     br()
 
-    # Linha 1: resultados
-    cols = st.columns(4)
-    for col, (lbl, val, sub) in zip(cols, [
-        ("JOGOS",    s["J"], "disputados"),
-        ("VITÓRIAS", s["W"], f"{s['pct_v']}% dos jogos"),
-        ("EMPATES",  s["D"], f"{s['pct_e']}% dos jogos"),
-        ("DERROTAS", s["L"], f"{s['pct_d']}% dos jogos"),
-    ]):
-        col.markdown(stat_card(lbl, val, sub), unsafe_allow_html=True)
-    br()
-
-    # Linha 2: gols e aproveitamento
-    cols2 = st.columns(4)
-    for col, (lbl, val, sub) in zip(cols2, [
-        ("MÉDIA GF/JOGO",    f"{s['gf_j']}", f"{s['GF']} gols no total"),
-        ("MÉDIA GC/JOGO",    f"{s['ga_j']}", f"{s['GA']} gols sofridos"),
-        ("SALDO MÉDIO/JOGO", f"{s['saldo_j']:+.2f}", f"saldo total {s['saldo']:+d}"),
-        ("APROVEITAMENTO",   f"{s['aprov']}%", f"{s['PTS']} pontos"),
-    ]):
-        col.markdown(stat_card(lbl, val, sub), unsafe_allow_html=True)
-    br()
-
-    # Linha 3: casa / fora
-    h_w = (home_df["Team Result"]=="W").sum()
-    a_w = (away_df["Team Result"]=="W").sum()
-    h_aprov = calc_aprov(h_w, (home_df["Team Result"]=="D").sum(), len(home_df))
-    a_aprov = calc_aprov(a_w, (away_df["Team Result"]=="D").sum(), len(away_df))
-    cols3 = st.columns(4)
-    for col, (lbl, val, sub) in zip(cols3, [
-        ("VITÓRIAS EM CASA", h_w,       f"aprov. {h_aprov}% em {len(home_df)} jogos"),
-        ("VITÓRIAS FORA",    a_w,       f"aprov. {a_aprov}% em {len(away_df)} jogos"),
-        ("MAIOR PLACAR",     t["Team Score"].max(), "gols marcados num jogo"),
-        ("TEMPORADAS",       n_seas,    "edições do Brasileirão"),
-    ]):
-        col.markdown(stat_card(lbl, val, sub), unsafe_allow_html=True)
-    br(2)
+    for row_stats in [
+        [("JOGOS",    s["J"], "disputados"),
+         ("VITÓRIAS", s["W"], f"{s['pct_v']}% dos jogos"),
+         ("EMPATES",  s["D"], f"{s['pct_e']}% dos jogos"),
+         ("DERROTAS", s["L"], f"{s['pct_d']}% dos jogos")],
+        [("MÉDIA GF/JOGO",    f"{s['gf_j']}",         f"{s['GF']} gols no total"),
+         ("MÉDIA GC/JOGO",    f"{s['ga_j']}",         f"{s['GA']} gols sofridos"),
+         ("SALDO MÉDIO/JOGO", f"{s['saldo_j']:+.2f}", f"saldo total {s['saldo']:+d}"),
+         ("APROVEITAMENTO",   f"{s['aprov']}%",        f"{s['PTS']} pontos")],
+        [("VITÓRIAS EM CASA",
+              (home_df["Resultado"]=="V").sum(),
+              f"aprov. {calc_aprov((home_df['Resultado']=='V').sum(),(home_df['Resultado']=='E').sum(),len(home_df))}% em {len(home_df)} jogos"),
+         ("VITÓRIAS FORA",
+              (away_df["Resultado"]=="V").sum(),
+              f"aprov. {calc_aprov((away_df['Resultado']=='V').sum(),(away_df['Resultado']=='E').sum(),len(away_df))}% em {len(away_df)} jogos"),
+         ("MAIOR PLACAR",  t["Gols Marcados"].max(), "gols marcados num jogo"),
+         ("TEMPORADAS",    n_seas,                    "edições do Brasileirão")],
+    ]:
+        cols = st.columns(4)
+        for col, (lbl, val, sub) in zip(cols, row_stats):
+            col.markdown(stat_card(lbl, val, sub), unsafe_allow_html=True)
+        br()
 
     col_pie, col_evo = st.columns([1, 2])
     with col_pie:
@@ -423,7 +366,7 @@ elif page == "📊 Histórico do Time":
         by_s = agg_season(t)
         fig2 = go.Figure()
         fig2.add_trace(go.Scatter(
-            x=by_s["Game Season"], y=by_s["aprov"],
+            x=by_s["Temporada"], y=by_s["aprov"],
             mode="lines+markers",
             line=dict(color="#AAFF00", width=2),
             marker=dict(size=6, color="#FFFFFF"),
@@ -441,30 +384,25 @@ elif page == "📊 Histórico do Time":
 
     br()
     section_title("TOP ADVERSÁRIOS")
-    adv = t.groupby("Opp Name").agg(
-        J=("Team Result","count"),
-        W=("Team Result", lambda x: (x=="W").sum()),
-        D=("Team Result", lambda x: (x=="D").sum()),
-        L=("Team Result", lambda x: (x=="L").sum()),
-        GF=("Team Score","sum"),
-        GA=("Opp Score","sum"),
+    adv = t.groupby("Adversário").agg(
+        J=("Resultado","count"),
+        W=("Resultado", lambda x: (x=="V").sum()),
+        D=("Resultado", lambda x: (x=="E").sum()),
+        L=("Resultado", lambda x: (x=="D").sum()),
+        GF=("Gols Marcados","sum"),
+        GA=("Gols Sofridos","sum"),
     ).reset_index()
-    adv["Saldo"]     = adv["GF"] - adv["GA"]
-    adv["Aprov%"]    = ((adv["W"]*3 + adv["D"]) / (adv["J"]*3) * 100).round(1)
-    adv["Média GF"]  = (adv["GF"] / adv["J"]).round(2)
-    adv["Média GC"]  = (adv["GA"] / adv["J"]).round(2)
+    adv["Saldo"]    = adv["GF"] - adv["GA"]
+    adv["Aprov%"]   = ((adv["W"]*3 + adv["D"]) / (adv["J"]*3) * 100).round(1)
+    adv["Média GF"] = (adv["GF"] / adv["J"]).round(2)
+    adv["Média GC"] = (adv["GA"] / adv["J"]).round(2)
     adv = adv.sort_values("J", ascending=False).head(20).reset_index(drop=True)
     adv.index += 1
-    adv = adv.rename(columns={
-        "Opp Name":"Adversário","J":"Jogos","W":"V","D":"E","L":"D",
-        "GF":"Gols Pró","GA":"Gols Contra"
-    })
+    adv = adv.rename(columns={"J":"Jogos","W":"V","D":"E","L":"D","GF":"Gols Pró","GA":"Gols Contra"})
     st.dataframe(adv, use_container_width=True, height=380)
 
 
-# ═══════════════════════════════════════════════════════════════════
 # SEQUÊNCIAS
-# ═══════════════════════════════════════════════════════════════════
 elif page == "🔥 Sequências":
     render_contact_bar()
     section_title("🔥 SEQUÊNCIAS HISTÓRICAS")
@@ -473,22 +411,22 @@ elif page == "🔥 Sequências":
     time_seq  = c1.selectbox("Time", all_teams)
     tipo_seq  = c2.selectbox("Tipo",
         ["Vitórias","Empates","Derrotas","Sem derrota (V+E)","Sem vitória (E+D)"])
-    mando_seq = c3.selectbox("Mando", ["Todos","Mandante (H)","Visitante (A)"])
+    mando_seq = c3.selectbox("Mando", ["Todos","Mandante (Casa)","Visitante (Fora)"])
     adv_seq   = c4.selectbox("Contra time específico", ["(Todos)"] + all_teams)
 
-    seq_df = df[df["Team Name"] == time_seq].copy().sort_values("Game Date").reset_index(drop=True)
-    if mando_seq == "Mandante (H)":    seq_df = seq_df[seq_df["Game Venue"] == "H"]
-    elif mando_seq == "Visitante (A)": seq_df = seq_df[seq_df["Game Venue"] == "A"]
-    if adv_seq != "(Todos)":           seq_df = seq_df[seq_df["Opp Name"] == adv_seq]
+    seq_df = df[df["Time"] == time_seq].copy().sort_values("Data").reset_index(drop=True)
+    if mando_seq == "Mandante (Casa)":   seq_df = seq_df[seq_df["Mando"] == "Casa"]
+    elif mando_seq == "Visitante (Fora)": seq_df = seq_df[seq_df["Mando"] == "Fora"]
+    if adv_seq != "(Todos)":              seq_df = seq_df[seq_df["Adversário"] == adv_seq]
 
     FLAGS = {
-        "Vitórias":           lambda r: r == "W",
-        "Empates":            lambda r: r == "D",
-        "Derrotas":           lambda r: r == "L",
-        "Sem derrota (V+E)":  lambda r: r in ["W","D"],
-        "Sem vitória (E+D)":  lambda r: r in ["D","L"],
+        "Vitórias":           lambda r: r == "V",
+        "Empates":            lambda r: r == "E",
+        "Derrotas":           lambda r: r == "D",
+        "Sem derrota (V+E)":  lambda r: r in ["V","E"],
+        "Sem vitória (E+D)":  lambda r: r in ["E","D"],
     }
-    seq_df["flag"] = seq_df["Team Result"].apply(FLAGS[tipo_seq])
+    seq_df["flag"] = seq_df["Resultado"].apply(FLAGS[tipo_seq])
 
     def find_sequences(rows):
         seqs, streak, start = [], 0, None
@@ -499,14 +437,14 @@ elif page == "🔥 Sequências":
             else:
                 if streak:
                     seqs.append({"tamanho": streak,
-                                 "inicio": rows.iloc[start]["Game Date"],
-                                 "fim":    rows.iloc[i-1]["Game Date"],
+                                 "inicio": rows.iloc[start]["Data"],
+                                 "fim":    rows.iloc[i-1]["Data"],
                                  "ini_idx": start, "fim_idx": i-1, "ativa": False})
                 streak, start = 0, None
         if streak:
             seqs.append({"tamanho": streak,
-                         "inicio": rows.iloc[start]["Game Date"],
-                         "fim":    rows.iloc[len(rows)-1]["Game Date"],
+                         "inicio": rows.iloc[start]["Data"],
+                         "fim":    rows.iloc[len(rows)-1]["Data"],
                          "ini_idx": start, "fim_idx": len(rows)-1, "ativa": True})
         return sorted(seqs, key=lambda x: x["tamanho"], reverse=True)
 
@@ -535,7 +473,7 @@ elif page == "🔥 Sequências":
         fim_str = seq["fim"].strftime("%d/%m/%Y")
         games   = seq_df.iloc[seq["ini_idx"]:seq["fim_idx"]+1]
         resumo  = " → ".join(
-            f"{r['Team Score']}-{r['Opp Score']} {r['Opp Name']} ({r['Game Season']})"
+            f"{r['Gols Marcados']}-{r['Gols Sofridos']} {r['Adversário']} ({r['Temporada']})"
             for _, r in games.head(5).iterrows()
         )
         if len(games) > 5:
@@ -575,9 +513,7 @@ elif page == "🔥 Sequências":
         st.plotly_chart(fig, use_container_width=True)
 
 
-# ═══════════════════════════════════════════════════════════════════
 # GRÁFICOS
-# ═══════════════════════════════════════════════════════════════════
 elif page == "📈 Gráficos":
     render_contact_bar()
     section_title("📈 GRÁFICOS E ANÁLISES")
@@ -593,10 +529,9 @@ elif page == "📈 Gráficos":
         metrica_evo = c2.selectbox("Métrica", list(METRIC_MAP.keys()), key="evo_met")
 
         c3, c4 = st.columns(2)
-        evo_ini = c3.selectbox("Temporada início", seasons, index=0,             key="evo_ini")
+        evo_ini = c3.selectbox("Temporada início", seasons, index=0,              key="evo_ini")
         evo_fim = c4.selectbox("Temporada fim",    seasons, index=len(seasons)-1, key="evo_fim")
 
-        # Seleção de cor por time
         if times_evo:
             br()
             st.markdown("**Cores dos times:**")
@@ -608,14 +543,13 @@ elif page == "📈 Gráficos":
 
             fig_evo = go.Figure()
             for i, nome in enumerate(times_evo):
-                t2 = df[(df["Team Name"] == nome) &
-                        (df["Game Season"] >= evo_ini) & (df["Game Season"] <= evo_fim)]
-                if len(t2) == 0:
-                    continue
+                t2 = df[(df["Time"] == nome) &
+                        (df["Temporada"] >= evo_ini) & (df["Temporada"] <= evo_fim)]
+                if len(t2) == 0: continue
                 by_s = agg_season(t2)
                 y    = by_s[METRIC_MAP[metrica_evo]]
                 fig_evo.add_trace(go.Scatter(
-                    x=by_s["Game Season"], y=y, name=nome,
+                    x=by_s["Temporada"], y=y, name=nome,
                     mode="lines+markers",
                     line=dict(color=cores_escolhidas[i], width=2),
                     marker=dict(size=7, color=cores_escolhidas[i])
@@ -643,23 +577,23 @@ elif page == "📈 Gráficos":
                 sc_fim = st.selectbox("Até", seasons, index=len(seasons)-1, key="sc_fim")
 
         cx, cy, ctam = st.columns(3)
-        eixo_x    = cx.selectbox("Eixo X",         list(METRIC_MAP.keys()), index=4, key="sc_x")
-        eixo_y    = cy.selectbox("Eixo Y",         list(METRIC_MAP.keys()), index=0, key="sc_y")
-        tam_bolha = ctam.selectbox("Tamanho bolha", ["(nenhum)"] + list(METRIC_MAP.keys()),   key="sc_tam")
+        eixo_x    = cx.selectbox("Eixo X",        list(METRIC_MAP.keys()), index=4, key="sc_x")
+        eixo_y    = cy.selectbox("Eixo Y",        list(METRIC_MAP.keys()), index=0, key="sc_y")
+        tam_bolha = ctam.selectbox("Tamanho bolha", ["(nenhum)"] + list(METRIC_MAP.keys()), key="sc_tam")
 
         sc = df.copy()
         if sc_modo == "Temporada única" and sc_temp:
-            sc = sc[sc["Game Season"] == sc_temp]
+            sc = sc[sc["Temporada"] == sc_temp]
         elif sc_modo == "Intervalo" and sc_ini and sc_fim:
-            sc = sc[(sc["Game Season"] >= sc_ini) & (sc["Game Season"] <= sc_fim)]
+            sc = sc[(sc["Temporada"] >= sc_ini) & (sc["Temporada"] <= sc_fim)]
 
-        agg = sc.groupby("Team Name").agg(
-            J=("Team Result","count"),
-            W=("Team Result", lambda x: (x=="W").sum()),
-            D=("Team Result", lambda x: (x=="D").sum()),
-            L=("Team Result", lambda x: (x=="L").sum()),
-            GF=("Team Score","sum"),
-            GA=("Opp Score","sum"),
+        agg = sc.groupby("Time").agg(
+            J=("Resultado","count"),
+            W=("Resultado", lambda x: (x=="V").sum()),
+            D=("Resultado", lambda x: (x=="E").sum()),
+            L=("Resultado", lambda x: (x=="D").sum()),
+            GF=("Gols Marcados","sum"),
+            GA=("Gols Sofridos","sum"),
         ).reset_index()
         agg["PTS"]     = agg["W"]*3 + agg["D"]
         agg["saldo"]   = agg["GF"] - agg["GA"]
@@ -676,14 +610,13 @@ elif page == "📈 Gráficos":
         size_col = METRIC_MAP[tam_bolha] if tam_bolha != "(nenhum)" else None
 
         fig_sc = px.scatter(
-            agg, x=x_col, y=y_col, text="Team Name",
+            agg, x=x_col, y=y_col, text="Time",
             size=size_col, color=y_col,
             color_continuous_scale=[[0,"#444444"],[0.5,"#C0C0C0"],[1,"#AAFF00"]],
-            hover_name="Team Name",
+            hover_name="Time",
             labels={x_col: eixo_x, y_col: eixo_y}
         )
-        fig_sc.update_traces(textposition="top center",
-                             textfont=dict(size=9, color="#C0C0C0"))
+        fig_sc.update_traces(textposition="top center", textfont=dict(size=9, color="#C0C0C0"))
         fig_sc.update_layout(
             **PLOTLY_LAYOUT, height=520, coloraxis_showscale=False,
             xaxis=dict(gridcolor="#1a1a1a", color="#888"),
@@ -695,28 +628,27 @@ elif page == "📈 Gráficos":
     with tab_comp:
         c1, c2, c3 = st.columns([2,1,1])
         times_comp = c1.multiselect("Times (até 6)", all_teams, default=all_teams[:3], max_selections=6)
-        comp_ini   = c2.selectbox("De",  seasons, index=0,             key="comp_ini")
+        comp_ini   = c2.selectbox("De",  seasons, index=0,              key="comp_ini")
         comp_fim   = c3.selectbox("Até", seasons, index=len(seasons)-1, key="comp_fim")
 
         if times_comp:
-            # Cores por time
             br()
             st.markdown("**Cores dos times:**")
             cc = st.columns(len(times_comp))
             cores_comp = []
             for idx, (col, nome) in enumerate(zip(cc, times_comp)):
-                c2_ = col.color_picker(nome, value=COR_PADRAO[idx % len(COR_PADRAO)], key=f"cor_comp_{idx}")
-                cores_comp.append(c2_)
+                c_ = col.color_picker(nome, value=COR_PADRAO[idx % len(COR_PADRAO)], key=f"cor_comp_{idx}")
+                cores_comp.append(c_)
 
-            tc = df[(df["Team Name"].isin(times_comp)) &
-                    (df["Game Season"] >= comp_ini) & (df["Game Season"] <= comp_fim)]
-            ac = tc.groupby("Team Name").agg(
-                J=("Team Result","count"),
-                W=("Team Result", lambda x: (x=="W").sum()),
-                D=("Team Result", lambda x: (x=="D").sum()),
-                L=("Team Result", lambda x: (x=="L").sum()),
-                GF=("Team Score","sum"),
-                GA=("Opp Score","sum"),
+            tc = df[(df["Time"].isin(times_comp)) &
+                    (df["Temporada"] >= comp_ini) & (df["Temporada"] <= comp_fim)]
+            ac = tc.groupby("Time").agg(
+                J=("Resultado","count"),
+                W=("Resultado", lambda x: (x=="V").sum()),
+                D=("Resultado", lambda x: (x=="E").sum()),
+                L=("Resultado", lambda x: (x=="D").sum()),
+                GF=("Gols Marcados","sum"),
+                GA=("Gols Sofridos","sum"),
             ).reset_index()
             ac["PTS"]    = ac["W"]*3 + ac["D"]
             ac["Saldo"]  = ac["GF"] - ac["GA"]
@@ -727,7 +659,6 @@ elif page == "📈 Gráficos":
             ac["Méd GF"] = (ac["GF"] / ac["J"]).round(2)
             ac["Méd GC"] = (ac["GA"] / ac["J"]).round(2)
 
-            # Gráfico barras agrupadas com métricas de médias/percentuais
             metrica_comp = st.selectbox(
                 "Métrica para o gráfico",
                 ["Aproveitamento (%)","% Vitórias","% Empates","% Derrotas",
@@ -744,7 +675,7 @@ elif page == "📈 Gráficos":
             }
             fig_comp = go.Figure()
             for i, nome in enumerate(times_comp):
-                r = ac[ac["Team Name"] == nome]
+                r = ac[ac["Time"] == nome]
                 if len(r) == 0: continue
                 fig_comp.add_trace(go.Bar(
                     name=nome,
@@ -766,12 +697,11 @@ elif page == "📈 Gráficos":
 
             section_title("TABELA COMPARATIVA")
             show = ac.rename(columns={
-                "Team Name":"Time","J":"Jogos","W":"V","D":"E","L":"D",
+                "Time":"Time","J":"Jogos","W":"V","D":"E","L":"D",
                 "GF":"Gols Pró","GA":"Gols Contra","PTS":"Pontos"
             }).sort_values("Aprov%", ascending=False).reset_index(drop=True)
             show.index += 1
             st.dataframe(show, use_container_width=True)
 """
-
 with open("app.py", "w") as f:
     f.write(app_code)
