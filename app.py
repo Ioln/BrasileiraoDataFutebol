@@ -15,13 +15,41 @@ with open("style.css") as f:
     st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
 
-# DADOS 
+# DADOS  
 @st.cache_data
 def load_data():
-    df = pd.read_excel("BRAT_FINAL.xlsx")
-    df["Data"]       = pd.to_datetime(df["Data"])
-    df["Temporada"]  = pd.to_numeric(df["Temporada"], errors="coerce").fillna(0).astype(int)
+    import os
+
+    # Tenta o dataset pré-processado; se não existir, usa o bruto e adapta
+    if os.path.exists("BRAT_FINAL.xlsx"):
+        df = pd.read_excel("BRAT_FINAL.xlsx")
+        df["Data"]      = pd.to_datetime(df["Data"])
+        df["Temporada"] = pd.to_numeric(df["Temporada"], errors="coerce").fillna(0).astype(int)
+    else:
+        df = pd.read_excel("BRAT.xlsx")
+        df["Game Date"]   = pd.to_datetime(df["Game Date"])
+        df["Game Season"] = pd.to_numeric(df["Game Season"], errors="coerce").fillna(0).astype(int)
+        # Renomeia para português
+        df = df.rename(columns={
+            "Game Season": "Temporada",
+            "Game Date":   "Data",
+            "Team Name":   "Time",
+            "Team Score":  "Gols Marcados",
+            "Opp Score":   "Gols Sofridos",
+            "Opp Name":    "Adversário",
+            "Team State":  "UF Mandante",
+            "Opp State":   "UF Adversário",
+            "Game Venue":  "Mando",
+            "Team Result": "Resultado",
+            "Comp":        "Competição",
+            "Game Stage":  "Fase",
+        })
+        df["Mando"]     = df["Mando"].map({"H": "Casa", "A": "Fora"}).fillna(df["Mando"])
+        df["Resultado"] = df["Resultado"].map({"W": "V", "D": "E", "L": "D"}).fillna(df["Resultado"])
+
     df = df[df["Temporada"] > 0]
+    df["Time"]       = df["Time"].apply(corrigir_nome)
+    df["Adversário"] = df["Adversário"].apply(corrigir_nome)
     return df
 
 df         = load_data()
@@ -30,7 +58,6 @@ all_states = sorted(df["UF Mandante"].dropna().unique().tolist())
 seasons    = sorted(df["Temporada"].unique().tolist())
 
 # CONSTANTES / HELPERS
-
 COR_PADRAO = ["#AAFF00","#F7F7F7","#FFFFFF","#39FF14","#00FF7F","#7FFF00"]
 
 PLOTLY_LAYOUT = dict(
@@ -126,6 +153,9 @@ def render_contact_bar():
         unsafe_allow_html=True
     )
 
+# ═══════════════════════════════════════════════════════════════════
+# SIDEBAR
+# ═══════════════════════════════════════════════════════════════════
 with st.sidebar:
     try:
         st.image("Brasileirão.png", use_container_width=True)
@@ -514,6 +544,7 @@ elif page == "🔥 Sequências":
 
 
 # GRÁFICOS
+
 elif page == "📈 Gráficos":
     render_contact_bar()
     section_title("📈 GRÁFICOS E ANÁLISES")
